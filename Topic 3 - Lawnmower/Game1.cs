@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace Topic_3___Lawnmower
+namespace Topic_3___Lawnmower //Maxym F.
 {
     public class Game1 : Game
     {
