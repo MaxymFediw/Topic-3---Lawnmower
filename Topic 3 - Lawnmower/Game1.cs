@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Collections.Generic;
 
 namespace Topic_3___Lawnmower //Maxym F.
 {
@@ -15,7 +16,10 @@ namespace Topic_3___Lawnmower //Maxym F.
         Rectangle window;
         Texture2D grassTexture;
         Texture2D mowerTexture;
+
         Rectangle mowerRect;
+        List<Rectangle> grassTiles;
+
 
         SoundEffect mowerSound;
         SoundEffectInstance mowerSoundInstance;
@@ -40,6 +44,14 @@ namespace Topic_3___Lawnmower //Maxym F.
 
             mowerRect = new Rectangle(100, 100, 30, 30);
 
+            mowerSpeed = Vector2.Zero;
+
+            grassTiles = new List<Rectangle>();
+            for (int x = 0; x < window.Width; x += 5)
+                for (int y = 0; y < window.Height; y += 5)
+                    grassTiles.Add(new Rectangle(x, y, 5, 5));
+
+
             base.Initialize();
         }
 
@@ -61,10 +73,38 @@ namespace Topic_3___Lawnmower //Maxym F.
            
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            
+
             // TODO: Add your update logic here
 
-            base.Update(gameTime);
+            keyboardState = Keyboard.GetState();
+
+            mowerSpeed = new Vector2(0, 0);
+
+            if (keyboardState.IsKeyDown(Keys.W) && mowerRect.Y != 0)
+                mowerSpeed.Y -= 1;
+            if (keyboardState.IsKeyDown(Keys.S) && mowerRect.Y != window.Height)
+                mowerSpeed.Y += 1;
+            if (keyboardState.IsKeyDown(Keys.A) && mowerRect.X != 0)
+                mowerSpeed.X -= 1;
+            if (keyboardState.IsKeyDown(Keys.D) && mowerRect.Right <= window.Width)
+                mowerSpeed.X += 1;
+                
+            mowerRect.Offset(mowerSpeed);
+
+            for (int i = 0; i < grassTiles.Count; i++)
+                if (mowerRect.Contains(grassTiles[i]))
+                {
+                    grassTiles.Remove(grassTiles[i]);
+
+                    i--;
+                }
+
+            if (mowerSpeed == Vector2.Zero)
+                mowerSoundInstance.Stop();
+            else
+                mowerSoundInstance.Play();
+
+                base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
@@ -75,7 +115,12 @@ namespace Topic_3___Lawnmower //Maxym F.
 
           
             _spriteBatch.Begin();
+            
             _spriteBatch.Draw(mowerTexture, mowerRect, Color.White);
+
+            foreach (Rectangle grass in grassTiles)
+                _spriteBatch.Draw(grassTexture, grass, Color.White);
+
             _spriteBatch.End();
 
             base.Draw(gameTime);
